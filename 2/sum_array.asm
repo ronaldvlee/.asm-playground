@@ -35,11 +35,11 @@ xorps xmm15, xmm15
 
 mov r13, 0 ; for loop counter goes up to 5, starting at 0
 beginLoop:
-  cmp r13, r14  ;comparing increment with 6 (the size of array)
-  je outOfLoop
-  addsd xmm15, [r15 + 8*r13]; ;add to xmm15 the value at array[counter]
-  inc r13  ;increment loop counter
-  jmp beginLoop
+    cmp r13, r14  ;comparing increment with 6 (the size of array)
+    je outOfLoop
+    addsd xmm15, [r15 + 8*r13]; ;add to xmm15 the value at array[counter]
+    inc r13  ;increment loop counter
+    jmp beginLoop
 outOfLoop:
 
 pop rax ;push counter at the beginning

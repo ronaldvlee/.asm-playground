@@ -56,20 +56,20 @@ mov r14, rsi  ; This holds the second parameter (the size of array)
 ; this for loop will go to 6, the chosen array size, or end once cntrl d is pressed.
 mov r13, 0 ; for loop counter
 beginLoop:
-  cmp r14, r13 ; we want to exit loop when we hit the size of array
-  je outOfLoop
-  mov rax, 0
-  mov rdi, single_float_format
-  push qword 0
-  mov rsi, rsp
-  call scanf
-  cdqe
-  cmp rax, -1  ; loop termination condition: user enters cntrl + d.
-  pop r12
-  je outOfLoop
-  mov [r15 + 8*r13], r12  ;at array[counter], place the input number
-  inc r13  ;increment loop counter
-  jmp beginLoop
+    cmp r14, r13 ; we want to exit loop when we hit the size of array
+    je outOfLoop
+    mov rax, 0
+    mov rdi, single_float_format
+    push qword 0
+    mov rsi, rsp
+    call scanf
+    cdqe
+    cmp rax, -1  ; loop termination condition: user enters cntrl + d.
+    pop r12
+    je outOfLoop
+    mov [r15 + 8*r13], r12  ;at array[counter], place the input number
+    inc r13  ;increment loop counter
+    jmp beginLoop
 
 outOfLoop:
 pop rax ; counter push at the beginning
