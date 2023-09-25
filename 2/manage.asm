@@ -79,7 +79,7 @@ mov rdi, prompt3
 movsd xmm0, xmm15
 call printf
 
-movsd xmm0, xmm15
+mov rax, array
 
 ;===== Restore original values to integer registers ===================================================================
 popf                                                        ;Restore rflags

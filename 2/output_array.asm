@@ -31,7 +31,6 @@ push qword 0 ; remain on the boundary
 mov r15, rdi  ; This holds the first parameter (the array)
 mov r14, rsi  ; This holds the second parameter (the number of elements in the array, not size)
 
-
 ; loop the array and add each value to a total.
 mov rax, 1 ; one xmm register will be used
 
