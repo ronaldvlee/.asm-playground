@@ -1,6 +1,7 @@
 *.odt
 *.pdf
 *.o
+*.lis
 *.out
 *.zip
 .~*
