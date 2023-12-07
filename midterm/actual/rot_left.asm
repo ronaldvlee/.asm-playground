@@ -1,30 +1,15 @@
-global compute_trip
+; Name: Ronald Lee
+; Email: ronaldvlee@csu.fullerton.edu
+; Section: 240-3
 
-extern printf
-extern scanf
+global rot_left
 
 segment .data
-    str_f db "%s", 0
-    float_f db "%lf", 0
-
-    prompt1 db "Please enter the speed for the initial segment of the trip (mph): ", 0
-    prompt2 db "For how many miles will you maintain this average speed? ", 0
-    prompt3 db "What will be your speed during the final segment of the trip (mph)? ", 0
-
-    myfloat dq 0.369140625
 
 segment .bss
 
 segment .text
-
-%macro @print 1
-        mov rdi, str_f
-        mov rsi, %1
-        mov rax, 0
-        call printf
-%endmacro
-
-compute_trip:
+rot_left:
 ;Prolog ===== Insurance for any caller of this assembly module ========================================================
 ;Any future program calling this module that the data in the caller's GPRs will not be modified.
 push rbp
@@ -43,38 +28,48 @@ push r14                                                    ;Backup r14
 push r15                                                    ;Backup r15
 push rbx                                                    ;Backup rbx
 pushf                                                       ;Backup rflags
-;===== Code here ======================================================================================================%
+;===== Code here ======================================================================================================
 
-push qword [myfloat]
+; void rot_left(array, length, n)
+; rdi holds the array
+; rsi holds the length of the array
+; rdx holds the amount of times the array will be rotated to the left
 
-@print prompt1
+; This code was used to reference: https://www.javatpoint.com/java-program-to-left-rotate-the-elements-of-an-array
+;
+; for(int i = 0; i < n; i++){  
+;     int j, first;  
+;     first = arr[0];  
+;     for(j = 0; j < arr.length-1; j++){  
+;         arr[j] = arr[j+1];  
+;     }  
+;     //First element of array will be added to the end  
+;     arr[j] = first;  
+; }  
 
-pop rax
+mov r15, rdi ; array
+mov r14, rsi ; len
+mov r13, rdx ; n
 
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm15, [rsp]
+.loop:
 
-@print prompt2
+xor r11, r11 ; index
+movsd xmm15, [r15] ; saving first elem of array
 
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm14, [rsp]
+.rotation:
+movsd xmm14, [r15 + (r11 + 1) * 8]
+movsd [r15 + r11 * 8], xmm14        ; arr[j] = arr[j+1]
+inc r11
+cmp r11, r14 - 1
+jl .rotation
 
-@print prompt3
+movsd [r15 + (r14 - 1) * 8], xmm15  ; moves the first elem of the array to the back
 
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm13, [rsp]
+dec r13
+cmp r13, 0
+jg .loop
 
-
-
+.done:
 ;===== Restore original values to integer registers ===================================================================
 popf                                                        ;Restore rflags
 pop rbx                                                     ;Restore rbx

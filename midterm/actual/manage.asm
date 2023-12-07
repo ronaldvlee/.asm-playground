@@ -1,30 +1,40 @@
-global compute_trip
+; Name: Ronald Lee
+; Email: ronaldvlee@csu.fullerton.edu
+; Section: 240-3
 
+global manage
+
+extern input_array
+extern output_array
+extern sum_array
+extern rot_left
 extern printf
-extern scanf
 
 segment .data
     str_f db "%s", 0
     float_f db "%lf", 0
 
-    prompt1 db "Please enter the speed for the initial segment of the trip (mph): ", 0
-    prompt2 db "For how many miles will you maintain this average speed? ", 0
-    prompt3 db "What will be your speed during the final segment of the trip (mph)? ", 0
+    prompt1 db "Please enter floating point numbers separated by ws.  After the last valid input enter one more ws followed by control+d.", 10, 0
+    prompt2 db 10, "Function rot_left was called 1 time.", 10, 0
+    rotcalled db 10, "Function rot_left was called %d times consecutively.", 10, 0
+    here_arr db "Here is the array: ", 0
+    this_arr db "This is the array: ", 0
 
-    myfloat dq 0.369140625
+    MAX_ARRAY_SIZE equ 10
 
 segment .bss
+    array resq MAX_ARRAY_SIZE
 
 segment .text
 
-%macro @print 1
-        mov rdi, str_f
-        mov rsi, %1
-        mov rax, 0
-        call printf
-%endmacro
+manage:
 
-compute_trip:
+%macro @print 1
+    mov rdi, str_f
+    mov rsi, %1
+    mov rax, 0
+    call printf
+%endmacro
 ;Prolog ===== Insurance for any caller of this assembly module ========================================================
 ;Any future program calling this module that the data in the caller's GPRs will not be modified.
 push rbp
@@ -43,38 +53,81 @@ push r14                                                    ;Backup r14
 push r15                                                    ;Backup r15
 push rbx                                                    ;Backup rbx
 pushf                                                       ;Backup rflags
-;===== Code here ======================================================================================================%
-
-push qword [myfloat]
-
+;===== Code here ======================================================================================================
 @print prompt1
 
-pop rax
+mov rax, 0
+mov rdi, array
+mov rsi, MAX_ARRAY_SIZE
+call input_array
 
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm15, [rsp]
+mov r15, rax ; r15 will store the length of the array
 
+@print this_arr
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+call output_array
+
+; --- rotate 1 time ---
 @print prompt2
 
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm14, [rsp]
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+mov rdx, 1
+call rot_left
 
-@print prompt3
+@print here_arr
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+call output_array
+; ---
 
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm13, [rsp]
+; --- rotate 3 times ---
+mov rax, 0
+mov rdi, rotcalled
+mov rsi, 3
+call printf
+
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+mov rdx, 3
+call rot_left
+
+@print here_arr
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+call output_array
+; ---
+
+; --- rotate 2 times ---
+mov rax, 0
+mov rdi, rotcalled
+mov rsi, 2
+call printf
+
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+mov rdx, 2
+call rot_left
+
+@print here_arr
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+call output_array
+; ---
 
 
-
+mov rax, 0
+mov rdi, array
+mov rsi, r15
+call sum_array
 ;===== Restore original values to integer registers ===================================================================
 popf                                                        ;Restore rflags
 pop rbx                                                     ;Restore rbx

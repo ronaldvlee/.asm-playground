@@ -1,30 +1,11 @@
-global compute_trip
+; Name: Ronald Lee
+; Email: ronaldvlee@csu.fullerton.edu
+; Section: 240-3
 
-extern printf
-extern scanf
-
-segment .data
-    str_f db "%s", 0
-    float_f db "%lf", 0
-
-    prompt1 db "Please enter the speed for the initial segment of the trip (mph): ", 0
-    prompt2 db "For how many miles will you maintain this average speed? ", 0
-    prompt3 db "What will be your speed during the final segment of the trip (mph)? ", 0
-
-    myfloat dq 0.369140625
-
-segment .bss
+global sum_array
 
 segment .text
-
-%macro @print 1
-        mov rdi, str_f
-        mov rsi, %1
-        mov rax, 0
-        call printf
-%endmacro
-
-compute_trip:
+sum_array:
 ;Prolog ===== Insurance for any caller of this assembly module ========================================================
 ;Any future program calling this module that the data in the caller's GPRs will not be modified.
 push rbp
@@ -43,37 +24,31 @@ push r14                                                    ;Backup r14
 push r15                                                    ;Backup r15
 push rbx                                                    ;Backup rbx
 pushf                                                       ;Backup rflags
-;===== Code here ======================================================================================================%
+;===== Code here ======================================================================================================
 
-push qword [myfloat]
-
-@print prompt1
-
-pop rax
-
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm15, [rsp]
-
-@print prompt2
-
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm14, [rsp]
-
-@print prompt3
-
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm13, [rsp]
+push qword 0 ; remain on the boundary
+; Taking information from parameters
+mov r15, rdi  ; This holds the first parameter (the array)
+mov r14, rsi  ; This holds the second parameter (the number of elements in the array, not size)
 
 
+; loop the array and add each value to a total.
+mov rax, 1 ; one xmm register will be used
+
+xorps xmm15, xmm15
+
+mov r13, 0 ; for loop counter goes up to 5, starting at 0
+beginLoop:
+    cmp r13, r14  ;comparing increment with 6 (the size of array)
+    je outOfLoop
+    addsd xmm15, [r15 + 8*r13]; ;add to xmm15 the value at array[counter]
+    inc r13  ;increment loop counter
+    jmp beginLoop
+outOfLoop:
+
+pop rax ;push counter at the beginning
+
+movsd xmm0, xmm15 ; returning sum to caller
 
 ;===== Restore original values to integer registers ===================================================================
 popf                                                        ;Restore rflags

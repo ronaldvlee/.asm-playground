@@ -1,30 +1,17 @@
-global compute_trip
+; Name: Ronald Lee
+; Email: ronaldvlee@csu.fullerton.edu
+; Section: 240-3
+; Date: 12-06-2023
 
+global input_array
 extern printf
-extern scanf
 
-segment .data
-    str_f db "%s", 0
-    float_f db "%lf", 0
+section .data
+        prompt1 db "The array has been filled with random numbers.", 10, 0
 
-    prompt1 db "Please enter the speed for the initial segment of the trip (mph): ", 0
-    prompt2 db "For how many miles will you maintain this average speed? ", 0
-    prompt3 db "What will be your speed during the final segment of the trip (mph)? ", 0
+section .text
 
-    myfloat dq 0.369140625
-
-segment .bss
-
-segment .text
-
-%macro @print 1
-        mov rdi, str_f
-        mov rsi, %1
-        mov rax, 0
-        call printf
-%endmacro
-
-compute_trip:
+input_array:
 ;Prolog ===== Insurance for any caller of this assembly module ========================================================
 ;Any future program calling this module that the data in the caller's GPRs will not be modified.
 push rbp
@@ -43,38 +30,50 @@ push r14                                                    ;Backup r14
 push r15                                                    ;Backup r15
 push rbx                                                    ;Backup rbx
 pushf                                                       ;Backup rflags
-;===== Code here ======================================================================================================%
+;===== Code here ======================================================================================================
 
-push qword [myfloat]
+mov r14, rdi                   ; arg1: array pointer
+mov r15, rsi                   ; arg2: array size
 
-@print prompt1
+mov r13, 0                     ; initialize index
 
+.loop:
+; Length check.
+        cmp r13, r15
+        jge .done
+
+; Generate random number using rdrand.
+        mov    rax, 0
+        rdrand rax
+
+; Cast to double and store in xmm0.
+        movq xmm0, rax
+
+; Assert that it's not NaN, regenerate if it is.
+        ucomisd xmm0, xmm0             ; if NaN, then parity flag is set
+        jp      .loop                  ; (j)ump if (p)arity
+
+; Check that our exponent is not 0. The exponent is from bit 52 to 62.
+        mov rbx, 0x7FF0000000000000    ; mask for exponent
+        and rax, rbx                   ; use our float in rax and &mask it
+        shr rax, 52                    ; shift right to get exponent
+        cmp rax, 0                     ; compare to 0
+        je  .loop                      ; if 0, then generate a new number
+
+; Store random float number in array.
+        movsd [r14 + (r13 * 8)], xmm0
+
+; Increment index and reloop.
+inc r13
+jmp .loop
+
+.done:
+
+push qword 0
+mov rax, 0
+mov rdi, prompt1
+call printf
 pop rax
-
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm15, [rsp]
-
-@print prompt2
-
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm14, [rsp]
-
-@print prompt3
-
-mov     rax, 0
-mov     rdi, float_f
-mov     rsi, rsp
-call    scanf
-movsd   xmm13, [rsp]
-
-
-
 ;===== Restore original values to integer registers ===================================================================
 popf                                                        ;Restore rflags
 pop rbx                                                     ;Restore rbx
